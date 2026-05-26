@@ -26,7 +26,8 @@ try {
   console.warn('discord_config.json not found — Discord login disabled');
 }
 
-const DISCORD_REDIRECT_URI = 'http://localhost:8080/api/auth/discord/callback';
+const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || 'http://localhost:8080/api/auth/discord/callback';
+const PORT = Number(process.env.PORT) || 8080;
 let DISCORD_WEBHOOK_URL = null;
 try {
   const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'discord_config.json'), 'utf8'));
@@ -787,8 +788,8 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(8080, () => {
-  console.log('azzubu server → http://localhost:8080');
-  console.log('Roobet proxy  → http://localhost:8080/api/roobet-leaderboard');
+server.listen(PORT, () => {
+  console.log(`azzubu server → http://localhost:${PORT}`);
+  console.log(`Roobet proxy  → http://localhost:${PORT}/api/roobet-leaderboard`);
   console.log('userId:', USER_ID);
 });
