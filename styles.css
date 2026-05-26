@@ -1137,3 +1137,132 @@ body {
   margin-top: 2px;
 }
 .lr-stat-prize { color: var(--azz-bright); }
+
+/* ============================================================
+   MOBILE / RESPONSIVE
+   ============================================================ */
+
+/* Hide hamburger by default; backdrop hidden */
+.hamburger-btn { display: none; }
+.sidebar-backdrop { display: none; }
+
+@media (max-width: 1024px) {
+  .shell { grid-template-columns: 1fr; }
+
+  /* Sidebar becomes slide-in drawer */
+  .sidebar {
+    position: fixed; top: 0; left: 0;
+    width: 280px; max-width: 85vw;
+    height: 100vh;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    background: var(--bg);
+    overflow-y: auto;
+  }
+  .sidebar-open { transform: translateX(0); box-shadow: 0 0 40px rgba(0,0,0,.5); }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 99;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s;
+  }
+  .sidebar-backdrop.show { opacity: 1; pointer-events: auto; }
+
+  .hamburger-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px;
+    background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px;
+    cursor: pointer; margin-bottom: 12px;
+    transition: border-color .15s;
+  }
+  .hamburger-btn:hover { border-color: var(--azz-bright); }
+
+  .main { padding: 16px 16px 60px; }
+
+  /* Hero stacks */
+  .hero { grid-template-columns: 1fr !important; gap: 24px; }
+  .hero h1 { font-size: 36px !important; }
+  .stats { gap: 12px !important; }
+  .stat-num { font-size: 22px !important; }
+
+  /* Stream card */
+  .stream-card { width: 100% !important; max-width: 100% !important; }
+  .stream-frame { aspect-ratio: 16 / 9; height: auto !important; }
+  .socials { flex-wrap: wrap; gap: 10px !important; }
+
+  /* Partners grid */
+  .partner-grid { grid-template-columns: 1fr !important; }
+
+  /* Daily Rewards */
+  .dr-title { font-size: 32px !important; }
+  .dr-timer-num { font-size: 22px !important; }
+  .dr-timer-cell { padding: 6px 10px !important; }
+  .dr-section { padding: 32px 16px !important; }
+
+  /* GTB / Admin */
+  .gtb-section, .ap-section { padding: 16px !important; }
+  .gtb-title { font-size: 28px !important; }
+  .ap-tabs { flex-wrap: wrap; gap: 6px !important; }
+  .ap-tab { font-size: 12px !important; padding: 8px 12px !important; }
+  .ap-header { flex-direction: column; align-items: flex-start; gap: 14px; }
+
+  /* Tables - horizontal scroll */
+  .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .admin-table { min-width: 600px; }
+
+  /* Giveaway admin layout */
+  .ga-grid { grid-template-columns: 1fr !important; }
+  .ga-head { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .gas-window { width: 100% !important; }
+  .gas-highlight { left: calc(50% - 70px) !important; }
+
+  /* User panel */
+  .up-section { padding: 24px 16px !important; }
+
+  /* FAQ */
+  .section { padding: 20px 0 !important; }
+
+  /* Toast position */
+  .toast { left: 16px !important; right: 16px !important; bottom: 16px !important; max-width: none !important; }
+
+  /* Hide topbar since logout is in sidebar now */
+  .topbar { display: none; }
+}
+
+@media (max-width: 600px) {
+  .hero h1 { font-size: 30px !important; }
+  .stats { grid-template-columns: repeat(3, 1fr) !important; }
+  .stat { padding: 10px 8px !important; }
+  .stat-num { font-size: 18px !important; }
+  .stat-label { font-size: 10px !important; }
+
+  .hero-ctas { flex-direction: column; align-items: stretch; }
+  .hero-ctas .btn { width: 100%; justify-content: center; }
+
+  .dr-title { font-size: 26px !important; }
+  .dr-timer-row { gap: 4px !important; }
+  .dr-timer-num { font-size: 18px !important; }
+  .dr-timer-cell { padding: 5px 8px !important; }
+
+  .gtb-title { font-size: 22px !important; }
+
+  .lb-podium { grid-template-columns: 1fr !important; gap: 12px; }
+  .podium-card { width: 100% !important; }
+
+  .ga-title { font-size: 18px !important; }
+  .ga-card { padding: 16px !important; }
+
+  .partner-card { padding: 16px !important; }
+
+  /* Make all buttons easier to tap */
+  .btn { min-height: 42px; }
+
+  /* Smaller font for tables */
+  .admin-table { min-width: 480px; font-size: 12px; }
+  .admin-table th, .admin-table td { padding: 8px 10px !important; }
+}

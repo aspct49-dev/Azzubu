@@ -36,10 +36,11 @@ const I = {
   wifi: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>,
   wifiOff: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>,
   x: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  menu: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
 };
 
 /* ====================== Sidebar ====================== */
-function Sidebar({ active, onChange, user }) {
+function Sidebar({ active, onChange, user, open, onClose }) {
   const items = [
     { id: 'home', label: 'Home', icon: I.home },
     { id: 'lb', label: 'Leaderboard', icon: I.trophy, chip: <span className="chip chip-warn">$1K</span> },
@@ -48,8 +49,9 @@ function Sidebar({ active, onChange, user }) {
     ...(user ? [{ id: 'profile', label: 'My Profile', icon: I.card }] : []),
     ...(user?.isAdmin ? [{ id: 'admin', label: 'Admin', icon: I.flag, chip: <span className="chip chip-violet">ADMIN</span> }] : []),
   ];
+  const handleClick = (id) => { onChange(id); onClose?.(); };
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
       <div className="brand">
         <img src="assets/azzubu-logo.png" alt="azzubu" />
       </div>
@@ -60,7 +62,7 @@ function Sidebar({ active, onChange, user }) {
           return (
             <div key={it.id}
               className={`nav-item ${active === it.id ? 'active' : ''}`}
-              onClick={() => onChange(it.id)}>
+              onClick={() => handleClick(it.id)}>
               <Icon/>
               <span className="label">{it.label}</span>
               {it.chip}
@@ -1227,6 +1229,7 @@ function App() {
   const [toast, setToast] = useState(null);
   const [active, setActive] = useState('home');
   const [user, setUser] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const timerRef = useRef();
 
   useEffect(() => {
@@ -1277,12 +1280,16 @@ function App() {
   return (
     <>
       <div className="shell">
-        <Sidebar active={active} onChange={setActive} user={user}/>
+        <Sidebar active={active} onChange={setActive} user={user} open={sidebarOpen} onClose={() => setSidebarOpen(false)}/>
         <main className="main">
+          <button className="hamburger-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+            <I.menu style={{width:22,height:22}}/>
+          </button>
           <Topbar user={user}/>
           {renderMain()}
         </main>
       </div>
+      <div className={`sidebar-backdrop ${sidebarOpen ? 'show' : ''}`} onClick={() => setSidebarOpen(false)}/>
       <div className={`toast ${toast ? 'show' : ''}`}>
         <I.check/> {toast}
       </div>
