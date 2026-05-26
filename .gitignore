@@ -1,0 +1,17 @@
+# Secrets — never commit
+discord_config.json
+disc_secret
+roobet_api_key
+
+# Runtime / user data
+daily_claims.json
+gtb_state.json
+user_profiles.json
+
+# Common ignores
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*

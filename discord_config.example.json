@@ -1,0 +1,5 @@
+{
+  "client_id": "YOUR_DISCORD_CLIENT_ID",
+  "client_secret": "YOUR_DISCORD_CLIENT_SECRET",
+  "webhook_url": "YOUR_DISCORD_WEBHOOK_URL"
+}
