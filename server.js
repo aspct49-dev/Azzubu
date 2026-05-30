@@ -6,6 +6,14 @@ const crypto = require('crypto');
 const tls = require('tls');
 const { execFile } = require('child_process');
 
+// Catch-all so a single bad request can never take down the server
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
+
 // ── Roobet ──────────────────────────────────────────────────────────────────
 const API_TOKEN = fs.readFileSync(path.join(__dirname, 'roobet_api_key'), 'utf8').trim();
 const payload = JSON.parse(Buffer.from(API_TOKEN.split('.')[1], 'base64url').toString());
