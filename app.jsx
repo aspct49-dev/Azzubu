@@ -250,7 +250,7 @@ function FAQ() {
   return (
     <section className="section">
       <div className="section-head">
-        <h2>FAQ</h2>
+        <img src="assets/FAQ.png" alt="FAQ" className="section-img" />
         <div className="sub">Find answers to common questions</div>
       </div>
       <div className="faq-list">
