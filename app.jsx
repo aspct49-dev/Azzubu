@@ -1089,7 +1089,7 @@ function ChallengeFAQ() {
   const [open, setOpen] = useState(-1);
   return (
     <div className="ch-faq">
-      <h2 className="ch-faq-title">FAQ</h2>
+      <img src="assets/FAQ.png" alt="FAQ" className="ch-faq-img"/>
       <div className="faq-list">
         {CHALLENGE_FAQS.map((it, i) => (
           <div key={i} className={`faq-item ${open === i ? 'open' : ''}`}>
@@ -1192,7 +1192,8 @@ function Challenges() {
   return (
     <section className="ch-section">
       <div className="ch-head">
-        <h1 className="ch-title">{active.length} Active Challenges</h1>
+        <img src="assets/challenges.png" alt="Challenges" className="ch-head-img"/>
+        <div className="ch-active-count">{active.length} Active</div>
         <div className="ch-search-wrap">
           <input
             type="text"
