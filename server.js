@@ -64,6 +64,14 @@ function loadProfiles() {
 }
 function saveProfiles(d) { fs.writeFileSync(PROFILES_FILE, JSON.stringify(d, null, 2)); }
 
+// ── Challenges state ──────────────────────────────────────────────────────────
+const CHALLENGES_FILE = path.join(__dirname, 'challenges_state.json');
+function loadChallenges() {
+  try { return JSON.parse(fs.readFileSync(CHALLENGES_FILE, 'utf8')); }
+  catch { return {}; }
+}
+function saveChallenges(d) { fs.writeFileSync(CHALLENGES_FILE, JSON.stringify(d, null, 2)); }
+
 // ── WebSocket client ─────────────────────────────────────────────────────────
 function wsConnect(host, port, wsPath, { onOpen, onMessage, onClose } = {}) {
   const key = crypto.randomBytes(16).toString('base64');
@@ -688,6 +696,32 @@ const server = http.createServer(async (req, res) => {
     const claims = loadDaily();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(claims[s.id]?.claims || []));
+    return;
+  }
+
+  // ── Challenges: public state ──────────────────────────────────────────────
+  if (urlPath === '/api/challenges' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(loadChallenges()));
+    return;
+  }
+
+  // ── Challenges: admin mark complete/active ────────────────────────────────
+  if (urlPath === '/api/admin/challenges/mark' && req.method === 'POST') {
+    const s = getSession(req);
+    if (!s?.isAdmin) { res.writeHead(403, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Forbidden' })); return; }
+    const body = await readBody(req);
+    const { id, status, completedBy } = body;
+    if (!id) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Missing id' })); return; }
+    const state = loadChallenges();
+    if (status === 'completed') {
+      state[id] = { status: 'completed', completedBy: (completedBy || '').trim() || 'Unknown', completedAt: new Date().toISOString() };
+    } else {
+      delete state[id];
+    }
+    saveChallenges(state);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
     return;
   }
 

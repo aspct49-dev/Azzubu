@@ -1072,14 +1072,127 @@ const CHALLENGES = [
   { id: 'sugar-rush-1000',name: 'Sugar Rush 1000',   image: 'sugar-rush-1000.jpg',   multiplier: '1500x', minBet: 0.20, reward: 25, provider: 'PRAGMATIC PLAY', providerColor: '#F4A800' },
 ];
 
+const CHALLENGE_FAQS = [
+  { q: 'How do I claim my rewards?',
+    a: 'Once you hit the required multiplier on the listed game with at least the minimum bet using code AZZUBU on Roobet, post a screenshot or video proof in our Discord ticket channel. An admin will verify and send you your reward.' },
+  { q: "What happens if I don't meet the minimum bet requirement?",
+    a: 'Hits below the minimum bet do not qualify for the reward, even if the multiplier requirement is met. The minimum bet ensures the challenge stays fair for everyone.' },
+  { q: 'Can I complete multiple challenges at once?',
+    a: 'Yes — every challenge is independent. You can complete as many as you like as long as you meet each one\'s requirements.' },
+  { q: 'How long do challenges stay active?',
+    a: 'Challenges stay active until they\'re marked completed by an admin. Once completed, they move to the Completed section and a new winner is recorded.' },
+  { q: 'What proof do I need to claim a reward?',
+    a: 'A clear screenshot or short video of your bet, the multiplier hit, and your Roobet username visible. Submit it through our Discord ticket system.' },
+];
+
+function ChallengeFAQ() {
+  const [open, setOpen] = useState(-1);
+  return (
+    <div className="ch-faq">
+      <h2 className="ch-faq-title">FAQ</h2>
+      <div className="faq-list">
+        {CHALLENGE_FAQS.map((it, i) => (
+          <div key={i} className={`faq-item ${open === i ? 'open' : ''}`}>
+            <div className="faq-q" onClick={() => setOpen(open === i ? -1 : i)}>
+              <span>{it.q}</span>
+              <I.chev/>
+            </div>
+            <div className="faq-a">{it.a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Challenges() {
   const [query, setQuery] = useState('');
-  const filtered = CHALLENGES.filter(c => c.name.toLowerCase().includes(query.trim().toLowerCase()));
+  const [state, setState] = useState({});
+  const [user, setUser] = useState(null);
+  const [busy, setBusy] = useState(null);
+
+  const load = () => fetch('/api/challenges').then(r => r.json()).then(setState).catch(() => {});
+  useEffect(() => {
+    load();
+    fetch('/api/auth/me').then(r => r.json()).then(setUser).catch(() => {});
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  const mark = async (id, status) => {
+    let completedBy = '';
+    if (status === 'completed') {
+      completedBy = prompt('Who completed this challenge? (Roobet username)');
+      if (!completedBy || !completedBy.trim()) return;
+    }
+    setBusy(id);
+    await fetch('/api/admin/challenges/mark', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status, completedBy }),
+    });
+    setBusy(null);
+    load();
+  };
+
+  const matchQuery = c => c.name.toLowerCase().includes(query.trim().toLowerCase());
+  const active = CHALLENGES.filter(c => state[c.id]?.status !== 'completed').filter(matchQuery);
+  const completed = CHALLENGES.filter(c => state[c.id]?.status === 'completed').filter(matchQuery);
+
+  const renderCard = (c, isCompleted) => {
+    const info = state[c.id];
+    return (
+      <div key={c.id} className={`ch-card ${isCompleted ? 'ch-card-done' : ''}`}>
+        <div className="ch-card-imgwrap">
+          <span className="ch-provider" style={{background: c.providerColor}}>{c.provider}</span>
+          {isCompleted && <span className="ch-done-badge"><I.check style={{width:11,height:11}}/> COMPLETED</span>}
+          <img src={`assets/${c.image}`} alt={c.name} className="ch-card-img"/>
+          <div className="ch-card-gradient"/>
+          <div className="ch-card-name">{c.name}</div>
+        </div>
+        <div className="ch-stats">
+          <div className="ch-stat">
+            <I.target style={{width:14,height:14}}/>
+            <div className="ch-stat-val">{c.multiplier}</div>
+          </div>
+          <div className="ch-stat">
+            <I.coin style={{width:14,height:14}}/>
+            <div className="ch-stat-val">${c.minBet.toFixed(2)}</div>
+          </div>
+          <div className="ch-stat">
+            <I.gift style={{width:14,height:14}}/>
+            <div className="ch-stat-val ch-stat-reward">${c.reward}</div>
+          </div>
+        </div>
+        {isCompleted ? (
+          <div className="ch-winner-info">
+            <div className="ch-winner-lbl">Won by</div>
+            <div className="ch-winner-name">{info?.completedBy || '—'}</div>
+          </div>
+        ) : (
+          <a href="https://roobet.com/?ref=azzubu" target="_blank" rel="noopener noreferrer" className="ch-play-btn">
+            Play
+          </a>
+        )}
+        {user?.isAdmin && (
+          isCompleted ? (
+            <button className="ch-admin-btn ch-admin-undo" onClick={() => mark(c.id, 'active')} disabled={busy === c.id}>
+              Reactivate
+            </button>
+          ) : (
+            <button className="ch-admin-btn" onClick={() => mark(c.id, 'completed')} disabled={busy === c.id}>
+              Mark Completed
+            </button>
+          )
+        )}
+      </div>
+    );
+  };
 
   return (
     <section className="ch-section">
       <div className="ch-head">
-        <h1 className="ch-title">{CHALLENGES.length} Challenges</h1>
+        <h1 className="ch-title">{active.length} Active Challenges</h1>
         <div className="ch-search-wrap">
           <input
             type="text"
@@ -1093,37 +1206,20 @@ function Challenges() {
       </div>
 
       <div className="ch-grid">
-        {filtered.map(c => (
-          <div key={c.id} className="ch-card">
-            <div className="ch-card-imgwrap">
-              <span className="ch-provider" style={{background: c.providerColor}}>{c.provider}</span>
-              <img src={`assets/${c.image}`} alt={c.name} className="ch-card-img"/>
-              <div className="ch-card-gradient"/>
-              <div className="ch-card-name">{c.name}</div>
-            </div>
-            <div className="ch-stats">
-              <div className="ch-stat">
-                <I.target style={{width:14,height:14}}/>
-                <div className="ch-stat-val">{c.multiplier}</div>
-              </div>
-              <div className="ch-stat">
-                <I.coin style={{width:14,height:14}}/>
-                <div className="ch-stat-val">${c.minBet.toFixed(2)}</div>
-              </div>
-              <div className="ch-stat">
-                <I.gift style={{width:14,height:14}}/>
-                <div className="ch-stat-val ch-stat-reward">${c.reward}</div>
-              </div>
-            </div>
-            <a href="https://roobet.com/?ref=azzubu" target="_blank" rel="noopener noreferrer" className="ch-play-btn">
-              Play
-            </a>
-          </div>
-        ))}
-        {filtered.length === 0 && (
-          <div className="ch-empty">No challenges match "{query}"</div>
-        )}
+        {active.map(c => renderCard(c, false))}
+        {active.length === 0 && <div className="ch-empty">No active challenges{query ? ` matching "${query}"` : ''}</div>}
       </div>
+
+      {completed.length > 0 && (
+        <>
+          <h2 className="ch-section-h">Completed Challenges</h2>
+          <div className="ch-grid">
+            {completed.map(c => renderCard(c, true))}
+          </div>
+        </>
+      )}
+
+      <ChallengeFAQ/>
     </section>
   );
 }

@@ -785,6 +785,28 @@ body {
 
 .ch-empty { grid-column: 1 / -1; text-align: center; color: var(--text-dim); padding: 40px 0; font-size: 14px; }
 
+/* Section heading for Completed group */
+.ch-section-h { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); margin: 40px 0 18px; }
+
+/* Completed card */
+.ch-card-done { opacity: .92; }
+.ch-card-done .ch-card-img { filter: grayscale(.35); }
+.ch-done-badge { position: absolute; top: 10px; right: 10px; display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 6px; font-size: 9px; font-weight: 800; letter-spacing: .08em; background: var(--good); color: #08321f; z-index: 2; }
+.ch-winner-info { margin: 10px 12px 14px; padding: 10px 12px; background: rgba(77,217,164,.1); border: 1px solid rgba(77,217,164,.25); border-radius: 10px; text-align: center; }
+.ch-winner-lbl { font-size: 10px; font-weight: 700; color: var(--good); text-transform: uppercase; letter-spacing: .12em; }
+.ch-winner-name { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 16px; color: var(--text); margin-top: 2px; }
+
+/* Admin button */
+.ch-admin-btn { margin: 0 12px 14px; padding: 8px; background: rgba(168,147,255,.12); border: 1px solid rgba(168,147,255,.3); color: var(--violet); font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 12px; border-radius: 8px; cursor: pointer; transition: background .15s; }
+.ch-admin-btn:hover:not(:disabled) { background: rgba(168,147,255,.22); }
+.ch-admin-btn:disabled { opacity: .5; cursor: not-allowed; }
+.ch-admin-undo { background: rgba(255,255,255,.04); border-color: var(--border); color: var(--text-muted); }
+.ch-admin-undo:hover:not(:disabled) { background: rgba(255,255,255,.1); }
+
+/* Challenge FAQ */
+.ch-faq { margin-top: 56px; max-width: 800px; margin-left: auto; margin-right: auto; }
+.ch-faq-title { font-family: 'Fredoka', sans-serif; font-size: 32px; font-weight: 700; color: var(--text); text-align: center; margin: 0 0 20px; }
+
 @media (max-width: 768px) {
   .ch-head { grid-template-columns: 1fr; gap: 14px; text-align: center; }
   .ch-search-wrap { max-width: 100%; }
