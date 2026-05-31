@@ -1068,7 +1068,7 @@ const CHALLENGES = [
   { id: 'sand-ashes',     name: 'Sand & Ashes',      image: 'sand_ashes.png',        multiplier: '750x',  minBet: 0.20, reward: 15, provider: 'HACKSAW',         providerColor: '#4DD9A4' },
   { id: 'le-digger',      name: 'Le Digger',         image: 'le_digger.png',         multiplier: '750x',  minBet: 0.20, reward: 15, provider: 'HACKSAW',         providerColor: '#4DD9A4' },
   { id: 'fruit-party',    name: 'Fruit Party',       image: 'fruit-party.jpg',       multiplier: '1000x', minBet: 0.20, reward: 15, provider: 'PRAGMATIC PLAY', providerColor: '#F4A800' },
-  { id: 'outsourced',     name: 'Outsourced',        image: 'outsourced.png',        multiplier: '2500x', minBet: 0.20, reward: 25, provider: 'HACKSAW',         providerColor: '#4DD9A4' },
+  { id: 'outsourced',     name: 'Outsourced',        image: 'outsourced.png',        multiplier: '2500x', minBet: 0.20, reward: 25, provider: 'NOLIMIT CITY',    providerColor: '#FF7AB8' },
   { id: 'sugar-rush-1000',name: 'Sugar Rush 1000',   image: 'sugar-rush-1000.jpg',   multiplier: '1500x', minBet: 0.20, reward: 25, provider: 'PRAGMATIC PLAY', providerColor: '#F4A800' },
 ];
 
