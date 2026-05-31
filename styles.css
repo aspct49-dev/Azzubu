@@ -755,6 +755,45 @@ body {
 .up-empty { font-size: 13px; color: var(--text-muted); padding: 8px 0; }
 .up-login-prompt { display: flex; flex-direction: column; align-items: center; gap: 16px; min-height: 50vh; justify-content: center; color: var(--text-muted); font-size: 15px; }
 
+/* ============== Challenges ============== */
+.ch-section { padding: 20px 8px 60px; }
+.ch-head { display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center; margin-bottom: 28px; }
+.ch-title { font-family: 'Fredoka', sans-serif; font-size: 28px; font-weight: 700; color: var(--text); margin: 0; }
+.ch-search-wrap { justify-self: center; width: 100%; max-width: 380px; }
+.ch-search { width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text); font-size: 14px; padding: 11px 16px; border-radius: 12px; outline: none; transition: border-color .15s; box-sizing: border-box; font-family: inherit; }
+.ch-search:focus { border-color: var(--azz-bright); }
+.ch-sub { justify-self: end; font-size: 13px; color: var(--text-muted); text-align: right; }
+
+.ch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; }
+.ch-card { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; transition: transform .15s, border-color .15s; }
+.ch-card:hover { transform: translateY(-3px); border-color: var(--azz-bright); }
+
+.ch-card-imgwrap { position: relative; aspect-ratio: 3/4; overflow: hidden; }
+.ch-card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ch-card-gradient { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.85) 100%); pointer-events: none; }
+.ch-card-name { position: absolute; bottom: 12px; left: 12px; right: 12px; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 17px; color: #fff; line-height: 1.15; text-shadow: 0 2px 6px rgba(0,0,0,.6); }
+.ch-provider { position: absolute; top: 10px; left: 10px; padding: 3px 9px; border-radius: 6px; font-size: 9px; font-weight: 800; letter-spacing: .08em; color: #0a1424; z-index: 2; }
+
+.ch-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 14px 12px 4px; }
+.ch-stat { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-muted); }
+.ch-stat svg { color: var(--azz-bright); }
+.ch-stat-val { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 13px; color: var(--text); }
+.ch-stat-reward { color: var(--good); }
+
+.ch-play-btn { display: flex; align-items: center; justify-content: center; margin: 10px 12px 14px; padding: 10px; background: linear-gradient(135deg, #6e3ad8 0%, #A893FF 100%); color: #fff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; border-radius: 10px; text-decoration: none; transition: opacity .15s, transform .1s; box-shadow: 0 4px 14px rgba(168,147,255,.3); }
+.ch-play-btn:hover { opacity: .9; transform: translateY(-1px); }
+
+.ch-empty { grid-column: 1 / -1; text-align: center; color: var(--text-dim); padding: 40px 0; font-size: 14px; }
+
+@media (max-width: 768px) {
+  .ch-head { grid-template-columns: 1fr; gap: 14px; text-align: center; }
+  .ch-search-wrap { max-width: 100%; }
+  .ch-sub { justify-self: center; text-align: center; }
+  .ch-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .ch-card-name { font-size: 14px; }
+  .ch-stat-val { font-size: 12px; }
+}
+
 /* ============== Claim status badges ============== */
 .claim-status { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; text-transform: uppercase; letter-spacing: .08em; font-family: 'Fredoka', sans-serif; }
 .claim-pending { background: rgba(244,168,0,.15); color: var(--warn); border: 1px solid rgba(244,168,0,.3); }

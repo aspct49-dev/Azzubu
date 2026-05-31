@@ -46,6 +46,7 @@ function Sidebar({ active, onChange, user, open, onClose }) {
     { id: 'lb', label: 'Leaderboard', icon: I.trophy, chip: <span className="chip chip-warn">$1K</span> },
     { id: 'guess', label: 'Guess The Balance', icon: I.target },
     { id: 'daily', label: 'Daily Rewards', icon: I.gift, chip: <span className="chip chip-good">FREE</span> },
+    { id: 'challenges', label: 'Challenges', icon: I.target },
     ...(user ? [{ id: 'profile', label: 'My Profile', icon: I.card }] : []),
     ...(user?.isAdmin ? [{ id: 'admin', label: 'Admin', icon: I.flag, chip: <span className="chip chip-violet">ADMIN</span> }] : []),
   ];
@@ -1061,6 +1062,72 @@ function GiveawayAdmin() {
   );
 }
 
+/* ====================== Challenges ====================== */
+const CHALLENGES = [
+  { id: 'big-dog-house',  name: 'The Big Dog House', image: 'The-Big-Dog-House.jpg', multiplier: '1000x', minBet: 0.20, reward: 20, provider: 'PRAGMATIC PLAY', providerColor: '#F4A800' },
+  { id: 'sand-ashes',     name: 'Sand & Ashes',      image: 'sand_ashes.png',        multiplier: '750x',  minBet: 0.20, reward: 15, provider: 'HACKSAW',         providerColor: '#4DD9A4' },
+  { id: 'le-digger',      name: 'Le Digger',         image: 'le_digger.png',         multiplier: '750x',  minBet: 0.20, reward: 15, provider: 'HACKSAW',         providerColor: '#4DD9A4' },
+  { id: 'fruit-party',    name: 'Fruit Party',       image: 'fruit-party.jpg',       multiplier: '1000x', minBet: 0.20, reward: 15, provider: 'PRAGMATIC PLAY', providerColor: '#F4A800' },
+  { id: 'outsourced',     name: 'Outsourced',        image: 'outsourced.png',        multiplier: '2500x', minBet: 0.20, reward: 25, provider: 'HACKSAW',         providerColor: '#4DD9A4' },
+  { id: 'sugar-rush-1000',name: 'Sugar Rush 1000',   image: 'sugar-rush-1000.jpg',   multiplier: '1500x', minBet: 0.20, reward: 25, provider: 'PRAGMATIC PLAY', providerColor: '#F4A800' },
+];
+
+function Challenges() {
+  const [query, setQuery] = useState('');
+  const filtered = CHALLENGES.filter(c => c.name.toLowerCase().includes(query.trim().toLowerCase()));
+
+  return (
+    <section className="ch-section">
+      <div className="ch-head">
+        <h1 className="ch-title">{CHALLENGES.length} Challenges</h1>
+        <div className="ch-search-wrap">
+          <input
+            type="text"
+            className="ch-search"
+            placeholder="Search challenges…"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="ch-sub">Play on <strong style={{color:'var(--azz-bright)'}}>Roobet</strong> with code <strong style={{color:'var(--azz-bright)'}}>AZZUBU</strong></div>
+      </div>
+
+      <div className="ch-grid">
+        {filtered.map(c => (
+          <div key={c.id} className="ch-card">
+            <div className="ch-card-imgwrap">
+              <span className="ch-provider" style={{background: c.providerColor}}>{c.provider}</span>
+              <img src={`assets/${c.image}`} alt={c.name} className="ch-card-img"/>
+              <div className="ch-card-gradient"/>
+              <div className="ch-card-name">{c.name}</div>
+            </div>
+            <div className="ch-stats">
+              <div className="ch-stat">
+                <I.target style={{width:14,height:14}}/>
+                <div className="ch-stat-val">{c.multiplier}</div>
+              </div>
+              <div className="ch-stat">
+                <I.coin style={{width:14,height:14}}/>
+                <div className="ch-stat-val">${c.minBet.toFixed(2)}</div>
+              </div>
+              <div className="ch-stat">
+                <I.gift style={{width:14,height:14}}/>
+                <div className="ch-stat-val ch-stat-reward">${c.reward}</div>
+              </div>
+            </div>
+            <a href="https://roobet.com/?ref=azzubu" target="_blank" rel="noopener noreferrer" className="ch-play-btn">
+              Play
+            </a>
+          </div>
+        ))}
+        {filtered.length === 0 && (
+          <div className="ch-empty">No challenges match "{query}"</div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 /* ====================== Admin Claims ====================== */
 function AdminClaims() {
   const [claims, setClaims] = useState(null);
@@ -1247,6 +1314,7 @@ function App() {
     if (active === 'admin' && user?.isAdmin) return <AdminPanel/>;
     if (active === 'guess') return <GuessTheBalance user={user}/>;
     if (active === 'daily') return <DailyRewards user={user}/>;
+    if (active === 'challenges') return <Challenges/>;
     if (active === 'profile') return <UserPanel user={user}/>;
     if (active === 'lb') {
       return (
