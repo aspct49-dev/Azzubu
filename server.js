@@ -118,15 +118,22 @@ function wsSendJSON(socket, obj) { wsSendFrame(socket, 0x81, Buffer.from(JSON.st
 // ── Giveaway ──────────────────────────────────────────────────────────────────
 const giveaway = {
   connected: false, active: false, keyword: '!enter',
-  entries: new Map(), winners: [], socket: null, chatroomId: null,
+  entries: new Map(), winners: [], winnerMessages: [], currentWinner: null,
+  socket: null, chatroomId: null,
 };
 function giveawaySnap() {
   return {
     connected: giveaway.connected, active: giveaway.active, keyword: giveaway.keyword,
-    entries: Array.from(giveaway.entries.values()), winners: giveaway.winners, chatroomId: giveaway.chatroomId,
+    entries: Array.from(giveaway.entries.values()), winners: giveaway.winners,
+    winnerMessages: giveaway.winnerMessages, currentWinner: giveaway.currentWinner,
+    chatroomId: giveaway.chatroomId,
   };
 }
 function handleKickMsg(username, content) {
+  if (giveaway.currentWinner && username.toLowerCase() === giveaway.currentWinner.toLowerCase()) {
+    giveaway.winnerMessages.unshift({ username, message: content, timestamp: Date.now() });
+    if (giveaway.winnerMessages.length > 50) giveaway.winnerMessages.length = 50;
+  }
   if (!giveaway.active) return;
   const kw = giveaway.keyword.trim().toLowerCase();
   const msg = content.trim().toLowerCase();
@@ -790,6 +797,8 @@ const server = http.createServer(async (req, res) => {
     const wonAt = new Date().toISOString();
     giveaway.entries.delete(winner.username.toLowerCase());
     giveaway.winners.unshift({ ...winner, wonAt });
+    giveaway.currentWinner = winner.username;
+    giveaway.winnerMessages = [];
     res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, winner: { ...winner, wonAt } })); return;
   }
   // ── Giveaway: remove entry ────────────────────────────────────────────────
@@ -804,7 +813,7 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === '/api/giveaway/clear' && req.method === 'POST') {
     const s = getSession(req);
     if (!s?.isAdmin) { res.writeHead(403, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Forbidden' })); return; }
-    giveaway.entries.clear(); giveaway.winners = [];
+    giveaway.entries.clear(); giveaway.winners = []; giveaway.winnerMessages = []; giveaway.currentWinner = null;
     res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true })); return;
   }
 

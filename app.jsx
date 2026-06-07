@@ -787,34 +787,36 @@ const VISIBLE = 5;
 const CENTER = 2;
 
 function GiveawayAdmin() {
+  const [state, setState] = useState(null);
   const [keyword, setKeyword] = useState('!enter');
-  const [isListening, setIsListening] = useState(false);
-  const [entries, setEntries] = useState([]);
-  const [winner, setWinner] = useState(null);
-  const [winnerMessages, setWinnerMessages] = useState([]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [spinStrip, setSpinStrip] = useState([]);
   const [spinTargetX, setSpinTargetX] = useState(0);
   const [spinKey, setSpinKey] = useState(0);
-  const [wsStatus, setWsStatus] = useState('disconnected');
   const [avatars, setAvatars] = useState({});
+  const [busy, setBusy] = useState(false);
 
-  const isListeningRef = useRef(false);
-  const keywordRef = useRef('!enter');
-  const winnerRef = useRef(null);
-  const wsRef = useRef(null);
+  const initialLoadRef = useRef(true);
   const spinWinnerRef = useRef('');
-  const chatroomIdRef = useRef(null);
   const fetchingRef = useRef(new Set());
 
-  useEffect(() => { isListeningRef.current = isListening; }, [isListening]);
-  useEffect(() => { keywordRef.current = keyword; }, [keyword]);
-  useEffect(() => { winnerRef.current = winner; }, [winner]);
+  const load = () => fetch('/api/giveaway').then(r => r.json()).then(d => {
+    setState(d);
+    if (initialLoadRef.current && d.keyword) { setKeyword(d.keyword); initialLoadRef.current = false; }
+  }).catch(() => {});
+
+  useEffect(() => { load(); const t = setInterval(load, 1500); return () => clearInterval(t); }, []);
+
+  const entries = state?.entries ?? [];
+  const winnerMessages = state?.winnerMessages ?? [];
+  const winner = state?.currentWinner ?? null;
+  const isListening = state?.active ?? false;
+  const wsStatus = state?.connected ? 'connected' : (busy ? 'connecting' : 'disconnected');
 
   useEffect(() => {
     entries.forEach(async (entry) => {
       const key = entry.username.toLowerCase();
-      if (fetchingRef.current.has(key)) return;
+      if (fetchingRef.current.has(key) || avatars[key]) return;
       fetchingRef.current.add(key);
       try {
         const res = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(entry.username)}`, { headers: { Accept: 'application/json' } });
@@ -823,76 +825,41 @@ function GiveawayAdmin() {
         if (url) setAvatars(prev => ({ ...prev, [key]: url }));
       } catch {}
     });
-  }, [entries]);
+  }, [entries.length]);
 
-  const connectChat = async () => {
-    if (wsRef.current) return true;
-    setWsStatus('connecting');
-    if (!chatroomIdRef.current) {
-      try {
-        const res = await fetch(`/api/kick/chatroom?channel=${encodeURIComponent(KICK_CHANNEL)}`);
-        const data = await res.json();
-        if (!data.chatroomId) { setWsStatus('error'); return false; }
-        chatroomIdRef.current = data.chatroomId;
-      } catch { setWsStatus('error'); return false; }
-    }
-    const roomId = chatroomIdRef.current;
-    const ws = new WebSocket(`wss://ws-us2.pusher.com/app/${PUSHER_KEY}?protocol=7&client=js&version=7.4.0&flash=false`);
-    wsRef.current = ws;
-    ws.onopen = () => {
-      setWsStatus('connected');
-      ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: `chatrooms.${roomId}.v2` } }));
-    };
-    ws.onmessage = (e) => {
-      try {
-        const msg = JSON.parse(e.data);
-        if (msg.event !== 'App\\Events\\ChatMessageEvent') return;
-        const data = JSON.parse(msg.data);
-        const username = data?.sender?.username || data?.sender?.slug || '';
-        const text = data?.content || '';
-        if (!username || !text) return;
-        if (winnerRef.current && username.toLowerCase() === winnerRef.current.toLowerCase()) {
-          setWinnerMessages(p => [{ username, message: text, timestamp: Date.now() }, ...p].slice(0, 50));
-        }
-        if (isListeningRef.current && text.trim().toLowerCase() === keywordRef.current.trim().toLowerCase()) {
-          setEntries(prev => {
-            if (prev.some(en => en.username.toLowerCase() === username.toLowerCase())) return prev;
-            return [...prev, { username, enteredAt: Date.now() }];
-          });
-        }
-      } catch {}
-    };
-    ws.onerror = () => setWsStatus('error');
-    ws.onclose = () => { setWsStatus('disconnected'); wsRef.current = null; };
-    return true;
-  };
-
-  const disconnectChat = () => {
-    wsRef.current?.close();
-    wsRef.current = null;
-    setWsStatus('disconnected');
-    setIsListening(false);
+  const post = async (endpoint, body = {}) => {
+    setBusy(true);
+    try {
+      const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const d = await r.json();
+      setBusy(false);
+      load();
+      return d;
+    } catch (e) { setBusy(false); return { error: e.message }; }
   };
 
   const startListening = async () => {
-    if (wsStatus !== 'connected') {
-      const ok = await connectChat();
-      if (!ok) return;
+    if (!state?.connected) {
+      const r = await post('/api/giveaway/connect');
+      if (r.error) return;
     }
-    setIsListening(true);
+    await post('/api/giveaway/start', { keyword });
   };
 
-  const stopListening = () => setIsListening(false);
+  const stopListening = () => post('/api/giveaway/stop');
+  const disconnectChat = () => post('/api/giveaway/disconnect');
+  const connectChat = () => post('/api/giveaway/connect');
+  const removeEntry = (username) => post('/api/giveaway/remove', { username });
+  const clearAll = () => { setSpinStrip([]); fetchingRef.current.clear(); setAvatars({}); post('/api/giveaway/clear'); };
 
-  const spin = () => {
+  const spin = async () => {
     if (entries.length === 0 || isSpinning) return;
     setIsSpinning(true);
-    setWinner(null);
-    setWinnerMessages([]);
     const names = entries.map(e => e.username);
-    const rand = () => names[Math.floor(Math.random() * names.length)];
-    const picked = rand();
+    const r = await post('/api/giveaway/spin');
+    const picked = r?.winner?.username || names[Math.floor(Math.random() * names.length)];
     spinWinnerRef.current = picked;
+    const rand = () => names[Math.floor(Math.random() * names.length)];
     const prepad = Array.from({ length: CENTER }, rand);
     const middle = Array.from({ length: 70 }, rand);
     const postpad = Array.from({ length: CENTER }, rand);
@@ -906,17 +873,8 @@ function GiveawayAdmin() {
 
   const handleAnimationComplete = () => {
     if (!isSpinning) return;
-    const picked = spinWinnerRef.current;
-    setWinner(picked);
     setIsSpinning(false);
-    setEntries(prev => prev.filter(e => e.username.toLowerCase() !== picked.toLowerCase()));
   };
-
-  const removeEntry = (username) => {
-    setEntries(prev => prev.filter(e => e.username.toLowerCase() !== username.toLowerCase()));
-  };
-
-  useEffect(() => () => { wsRef.current?.close(); }, []);
 
   const STATUS_LABEL = { disconnected: 'Disconnected', connecting: 'Connecting…', connected: 'Live', error: 'Connection Error' };
   const containerW = VISIBLE * ITEM_W;
@@ -981,7 +939,7 @@ function GiveawayAdmin() {
               <button className="ga-btn ga-btn-spin" onClick={spin} disabled={entries.length === 0 || isSpinning}>
                 <I.shuffle style={{width:15,height:15}}/> SPIN ({entries.length} {entries.length === 1 ? 'entry' : 'entries'})
               </button>
-              <button className="ga-btn ga-btn-clear" onClick={() => { setEntries([]); setWinner(null); setWinnerMessages([]); setSpinStrip([]); fetchingRef.current.clear(); setAvatars({}); }}>
+              <button className="ga-btn ga-btn-clear" onClick={clearAll}>
                 <I.trash style={{width:12,height:12}}/> Clear All
               </button>
             </div>
