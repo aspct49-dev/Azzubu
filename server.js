@@ -175,8 +175,17 @@ function curlGet(url) {
   });
 }
 
+// Known chatroom IDs — fallback when Kick API is unreachable (Cloudflare blocks Hostinger)
+const KNOWN_CHATROOM_IDS = { azzubu: 386255 };
+
 async function getKickChatroomId(channel) {
-  // Strategy 1: Node https (fast, may be blocked by Cloudflare)
+  // Strategy 1: env override
+  if (process.env.KICK_CHATROOM_ID) {
+    console.log('Chatroom ID via env:', process.env.KICK_CHATROOM_ID);
+    return Number(process.env.KICK_CHATROOM_ID);
+  }
+
+  // Strategy 2: Node https (fast, may be blocked by Cloudflare)
   try {
     const { status, body } = await kickGet(`/api/v2/channels/${channel}`);
     if (status === 200) {
@@ -185,12 +194,19 @@ async function getKickChatroomId(channel) {
     }
   } catch {}
 
-  // Strategy 2: curl (bypasses Cloudflare's Node TLS fingerprint detection)
+  // Strategy 3: curl (bypasses Cloudflare's Node TLS fingerprint detection)
   try {
     const stdout = await curlGet(`https://kick.com/api/v2/channels/${channel}`);
     const data = JSON.parse(stdout);
     if (data.chatroom?.id) { console.log('Chatroom ID via curl:', data.chatroom.id); return data.chatroom.id; }
   } catch (e) { console.error('curl strategy failed:', e.message); }
+
+  // Strategy 4: hardcoded known IDs (last resort)
+  if (KNOWN_CHATROOM_IDS[channel.toLowerCase()]) {
+    const id = KNOWN_CHATROOM_IDS[channel.toLowerCase()];
+    console.log('Chatroom ID via hardcoded fallback:', id);
+    return id;
+  }
 
   throw new Error('Could not get chatroom ID for ' + channel);
 }
